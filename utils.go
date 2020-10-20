@@ -19,6 +19,7 @@ package minio
 
 import (
 	"crypto/md5"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/xml"
@@ -150,9 +151,9 @@ func isValidEndpointURL(endpointURL url.URL) error {
 	if endpointURL == sentinelURL {
 		return errInvalidArgument("Endpoint url cannot be empty.")
 	}
-	if endpointURL.Path != "/" && endpointURL.Path != "" {
-		return errInvalidArgument("Endpoint url cannot have fully qualified paths.")
-	}
+	//if endpointURL.Path != "/" && endpointURL.Path != "" {
+	//	return errInvalidArgument("Endpoint url cannot have fully qualified paths.")
+	//}
 	if strings.Contains(endpointURL.Host, ".s3.amazonaws.com") {
 		if !s3utils.IsAmazonEndpoint(endpointURL) {
 			return errInvalidArgument("Amazon S3 endpoint should be 's3.amazonaws.com'.")
