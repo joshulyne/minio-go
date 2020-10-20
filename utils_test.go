@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minio/minio-go/v7/pkg/s3utils"
+	"github.com/joshulyne/minio-go/v7/pkg/s3utils"
 )
 
 // Tests signature redacting function used

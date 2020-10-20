@@ -23,9 +23,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/minio/minio-go/v7/pkg/encrypt"
+	"github.com/joshulyne/minio-go/v7"
+	"github.com/joshulyne/minio-go/v7/pkg/credentials"
+	"github.com/joshulyne/minio-go/v7/pkg/encrypt"
 )
 
 func main() {
