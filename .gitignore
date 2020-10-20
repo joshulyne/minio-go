@@ -2,3 +2,5 @@
 *.test
 validator
 golangci-lint
+.idea
+.idea/

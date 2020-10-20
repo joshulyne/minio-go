@@ -83,19 +83,19 @@ func sumMD5Base64(data []byte) string {
 // getEndpointURL - construct a new endpoint.
 func getEndpointURL(endpoint string, secure bool) (*url.URL, error) {
 	if strings.Contains(endpoint, ":") {
-		host, _, err := net.SplitHostPort(endpoint)
+		_, _, err := net.SplitHostPort(endpoint)
 		if err != nil {
 			return nil, err
 		}
-		if !s3utils.IsValidIP(host) && !s3utils.IsValidDomain(host) {
-			msg := "Endpoint: " + endpoint + " does not follow ip address or domain name standards."
-			return nil, errInvalidArgument(msg)
-		}
+		//if !s3utils.IsValidIP(host) && !s3utils.IsValidDomain(host) {
+		//	msg := "Endpoint: " + endpoint + " does not follow ip address or domain name standards."
+		//	return nil, errInvalidArgument(msg)
+		//}
 	} else {
-		if !s3utils.IsValidIP(endpoint) && !s3utils.IsValidDomain(endpoint) {
-			msg := "Endpoint: " + endpoint + " does not follow ip address or domain name standards."
-			return nil, errInvalidArgument(msg)
-		}
+		//if !s3utils.IsValidIP(endpoint) && !s3utils.IsValidDomain(endpoint) {
+		//	msg := "Endpoint: " + endpoint + " does not follow ip address or domain name standards."
+		//	return nil, errInvalidArgument(msg)
+		//}
 	}
 	// If secure is false, use 'http' scheme.
 	scheme := "https"
