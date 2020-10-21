@@ -474,16 +474,15 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 // do - execute http request.
 func (c Client) do(req *http.Request) (*http.Response, error) {
 
-	//if req.URL.String() == "http://10.42.127.166/rdei-thanos/?location=" {
-	//	req.URL = "http://10.42.127.166/s3/rdei-thanos/?location="
-	//}
-	_, _ = fmt.Fprint(c.traceOutput, req.URL)
-	_, _ = fmt.Fprint(c.traceOutput, req.URL.String())
-	_, _ = fmt.Fprint(c.traceOutput, req.URL.Scheme)
-	_, _ = fmt.Fprint(c.traceOutput, req.URL.Host)
-	_, _ = fmt.Fprint(c.traceOutput, req.URL.Path)
-	_, _ = fmt.Fprint(c.traceOutput, req.URL.RawPath)
-	_, _ = fmt.Fprint(c.traceOutput, req.URL.RawQuery)
+	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
+	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
+
+	if req.URL.Path == "/rdei-thanos/" {
+		req.URL.Path = "/s3/rdei-thanos/"
+	}
+
+	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
+	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -719,13 +718,8 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 
 	_, _ = fmt.Fprint(c.traceOutput, targetURL.String())
 
-	targetUrlString := targetURL.String()
-	if targetURL.String() == "http://10.42.127.166/rdei-thanos/?location=" {
-		targetUrlString = "http://10.42.127.166/s3/rdei-thanos/?location="
-	}
-
 	// Initialize a new HTTP request for the method.
-	req, err = http.NewRequestWithContext(ctx, method, targetUrlString, nil)
+	req, err = http.NewRequestWithContext(ctx, method, targetURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
