@@ -718,10 +718,15 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		return nil, err
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, targetURL.String())
+	_, _ = fmt.Fprint(c.traceOutput, "newRequest targetURL.String()", targetURL.String())
+
+	targetUrlString := targetURL.String()
+	if targetURL.String() == "http://10.42.127.166/rdei-thanos/?location=" {
+		targetUrlString = "http://10.42.127.166/s3/rdei-thanos/?location="
+	}
 
 	// Initialize a new HTTP request for the method.
-	req, err = http.NewRequestWithContext(ctx, method, targetURL.String(), nil)
+	req, err = http.NewRequestWithContext(ctx, method, targetUrlString, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -872,7 +877,7 @@ func (c Client) makeTargetURL(bucketName, objectName, bucketLocation string, isV
 
 	urlStr := scheme + "://" + host + "/"
 
-	_, _ = fmt.Fprint(c.traceOutput, urlStr)
+	_, _ = fmt.Fprint(c.traceOutput, "makeTargetURL urlStr:", urlStr)
 
 	// Make URL only if bucketName is available, otherwise use the
 	// endpoint URL.
@@ -894,14 +899,14 @@ func (c Client) makeTargetURL(bucketName, objectName, bucketLocation string, isV
 		}
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, urlStr)
+	_, _ = fmt.Fprint(c.traceOutput, "makeTargetURL urlStr:", urlStr)
 
 	// If there are any query values, add them to the end.
 	if len(queryValues) > 0 {
 		urlStr = urlStr + "?" + s3utils.QueryEncode(queryValues)
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, urlStr)
+	_, _ = fmt.Fprint(c.traceOutput, "makeTargetURL urlStr:", urlStr)
 
 	return url.Parse(urlStr)
 }
