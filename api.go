@@ -473,6 +473,18 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 
 // do - execute http request.
 func (c Client) do(req *http.Request) (*http.Response, error) {
+
+	//if req.URL.String() == "http://10.42.127.166/rdei-thanos/?location=" {
+	//	req.URL = "http://10.42.127.166/s3/rdei-thanos/?location="
+	//}
+	_, _ = fmt.Fprint(c.traceOutput, req.URL)
+	_, _ = fmt.Fprint(c.traceOutput, req.URL.String())
+	_, _ = fmt.Fprint(c.traceOutput, req.URL.Scheme)
+	_, _ = fmt.Fprint(c.traceOutput, req.URL.Host)
+	_, _ = fmt.Fprint(c.traceOutput, req.URL.Path)
+	_, _ = fmt.Fprint(c.traceOutput, req.URL.RawPath)
+	_, _ = fmt.Fprint(c.traceOutput, req.URL.RawQuery)
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		// Handle this specifically for now until future Golang versions fix this issue properly.
