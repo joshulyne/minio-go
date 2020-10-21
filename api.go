@@ -893,7 +893,7 @@ func (c Client) makeTargetURL(bucketName, objectName, bucketLocation string, isV
 		urlStr = urlStr + "?" + s3utils.QueryEncode(queryValues)
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, url.Parse(urlStr))
+	_, _ = fmt.Fprint(c.traceOutput, urlStr)
 
 	return url.Parse(urlStr)
 }
