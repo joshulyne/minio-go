@@ -717,12 +717,15 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		return nil, err
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, "newRequest targetURL.String()", targetURL.String())
-
 	targetUrlString := targetURL.String()
-	if targetURL.String() == "http://10.42.127.166/rdei-thanos/?location=" {
-		targetUrlString = "http://10.42.127.166/s3/rdei-thanos/?location="
+
+	_, _ = fmt.Fprint(c.traceOutput, "newRequest targetUrlString", targetUrlString)
+
+	if strings.Contains(targetUrlString, "http://10.42.127.166/rdei-thanos/") {
+		targetUrlString = strings.Replace(targetUrlString, "http://10.42.127.166/rdei-thanos/", "http://10.42.127.166/s3/rdei-thanos/", -1)
 	}
+
+	_, _ = fmt.Fprint(c.traceOutput, "newRequest targetUrlString", targetUrlString)
 
 	// Initialize a new HTTP request for the method.
 	req, err = http.NewRequestWithContext(ctx, method, targetUrlString, nil)
