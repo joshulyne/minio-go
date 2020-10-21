@@ -481,6 +481,8 @@ func (c Client) do(req *http.Request) (*http.Response, error) {
 		req.URL.Path = "/s3/rdei-thanos/"
 	}
 
+	req.Header.Add("Authorization", "Basic cmRlaTpyZGVp=")
+
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
 
