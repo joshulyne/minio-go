@@ -479,7 +479,7 @@ func (c Client) do(req *http.Request) (*http.Response, error) {
 	if req.URL.Path == "/rdei-thanos/" {
 		req.URL.Path = "/s3/rdei-thanos/"
 	}
-	
+
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
 
@@ -877,8 +877,6 @@ func (c Client) makeTargetURL(bucketName, objectName, bucketLocation string, isV
 
 	urlStr := scheme + "://" + host + "/"
 
-	_, _ = fmt.Fprint(c.traceOutput, "makeTargetURL urlStr:", urlStr)
-
 	// Make URL only if bucketName is available, otherwise use the
 	// endpoint URL.
 	if bucketName != "" {
@@ -899,14 +897,10 @@ func (c Client) makeTargetURL(bucketName, objectName, bucketLocation string, isV
 		}
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, "makeTargetURL urlStr:", urlStr)
-
 	// If there are any query values, add them to the end.
 	if len(queryValues) > 0 {
 		urlStr = urlStr + "?" + s3utils.QueryEncode(queryValues)
 	}
-
-	_, _ = fmt.Fprint(c.traceOutput, "makeTargetURL urlStr:", urlStr)
 
 	return url.Parse(urlStr)
 }
