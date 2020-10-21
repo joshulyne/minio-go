@@ -415,9 +415,8 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 		return err
 	}
 
-	_, err = fmt.Fprint(c.traceOutput, c.endpointURL)
-	_, err = fmt.Fprint(c.traceOutput, c.EndpointURL())
-	_, err = fmt.Fprint(c.traceOutput, req.URL)
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP c.endpointURL", c.EndpointURL())
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.URL", req.URL)
 
 	// Filter out Signature field from Authorization header.
 	origAuth := req.Header.Get("Authorization")
