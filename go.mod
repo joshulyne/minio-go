@@ -3,7 +3,6 @@ module github.com/joshulyne/minio-go/v7
 go 1.12
 
 require (
-	github.com/cheggaaa/pb v1.0.29 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/json-iterator/go v1.1.10
 	github.com/klauspost/cpuid v1.3.1 // indirect
