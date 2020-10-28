@@ -424,6 +424,10 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 		req.Header.Set("Authorization", redactSignature(origAuth))
 	}
 
+	for k, v := range req.Header {
+		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Header", k, v)
+	}
+
 	// Only display request header.
 	reqTrace, err := httputil.DumpRequestOut(req, false)
 	if err != nil {
@@ -452,6 +456,10 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	for k, v := range resp.Header {
+		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP resp.Header", k, v)
 	}
 
 	// Write response to trace output.
