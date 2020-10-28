@@ -440,6 +440,13 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 		return err
 	}
 
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP length of req.Header", len(req.Header))
+
+
+	for k, v := range req.Header {
+		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Header", k, v)
+	}
+
 	// Only display response header.
 	var respTrace []byte
 
@@ -457,6 +464,8 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 			return err
 		}
 	}
+
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP length of resp.Header", len(resp.Header))
 
 	for k, v := range resp.Header {
 		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP resp.Header", k, v)
