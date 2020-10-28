@@ -639,6 +639,15 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		errBodySeeker.Seek(0, 0) // Seek back to starting point.
 		res.Body = ioutil.NopCloser(errBodySeeker)
 
+		fmt.Println("read errResponse.Key: " + errResponse.Key)
+		fmt.Println("read errResponse.Region: " + errResponse.Region)
+		fmt.Println("read errResponse.BucketName: " + errResponse.BucketName)
+		fmt.Println("read errResponse.Code: " + errResponse.Code)
+		fmt.Println("read errResponse.HostID: " + errResponse.HostID)
+		fmt.Println("read errResponse.Message: " + errResponse.Message)
+		fmt.Println("read errResponse.RequestID: " + errResponse.RequestID)
+		fmt.Println("read errResponse.Error: ", errResponse.Error())
+
 		// Bucket region if set in error response and the error
 		// code dictates invalid region, we can retry the request
 		// with the new region.
@@ -654,7 +663,7 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			case "AccessDenied":
 				if errResponse.Region == "" {
 					// Region is empty we simply return the error.
-					return res, err
+					return res, errResponse
 				}
 				// Region is not empty figure out a way to
 				// handle this appropriately.
