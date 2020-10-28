@@ -597,8 +597,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		if err != nil {
 			errResponse := ToErrorResponse(err)
 			if isS3CodeRetryable(errResponse.Code) {
-				fmt.Println("-------------- RETRY --------------")
-				fmt.Println(errResponse)
+				_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+				_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 
 				continue // Retry.
 			}
@@ -612,8 +612,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 				return nil, err
 			}
 
-			fmt.Println("-------------- RETRY --------------")
-			fmt.Println(err)
+			_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+			_, err = fmt.Fprint(c.traceOutput, "error", err)
 
 			// Retry the request
 			continue
@@ -645,14 +645,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		errBodySeeker.Seek(0, 0) // Seek back to starting point.
 		res.Body = ioutil.NopCloser(errBodySeeker)
 
-		fmt.Println("read errResponse.Key: " + errResponse.Key)
-		fmt.Println("read errResponse.Region: " + errResponse.Region)
-		fmt.Println("read errResponse.BucketName: " + errResponse.BucketName)
-		fmt.Println("read errResponse.Code: " + errResponse.Code)
-		fmt.Println("read errResponse.HostID: " + errResponse.HostID)
-		fmt.Println("read errResponse.Message: " + errResponse.Message)
-		fmt.Println("read errResponse.RequestID: " + errResponse.RequestID)
-		fmt.Println("read errResponse.Error: ", errResponse.Error())
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- EXECUTE METHOD --------------")
+		_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 
 		// Bucket region if set in error response and the error
 		// code dictates invalid region, we can retry the request
@@ -677,8 +671,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 					// Gather Cached location only if bucketName is present.
 					if location, cachedOk := c.bucketLocCache.Get(metadata.bucketName); cachedOk && location != errResponse.Region {
 						c.bucketLocCache.Set(metadata.bucketName, errResponse.Region)
-						fmt.Println("-------------- RETRY --------------")
-						fmt.Println(errResponse)
+						_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+						_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 
 						continue // Retry.
 					}
@@ -688,8 +682,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 						// Retry if the error response has a different region
 						// than the request we just made.
 						metadata.bucketLocation = errResponse.Region
-						fmt.Println("-------------- RETRY --------------")
-						fmt.Println(errResponse)
+						_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+						_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 
 						continue // Retry
 					}
@@ -699,15 +693,15 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 
 		// Verify if error response code is retryable.
 		if isS3CodeRetryable(errResponse.Code) {
-			fmt.Println("-------------- RETRY --------------")
-			fmt.Println(errResponse)
+			_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+			_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 			continue // Retry.
 		}
 
 		// Verify if http status code is retryable.
 		if isHTTPStatusRetryable(res.StatusCode) {
-			fmt.Println("-------------- RETRY --------------")
-			fmt.Println(errResponse)
+			_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+			_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 			continue // Retry.
 		}
 
@@ -717,14 +711,14 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 
 	// Return an error when retry is canceled or deadlined
 	if e := retryCtx.Err(); e != nil {
-		fmt.Println("-------------- RETRY --------------")
-		fmt.Println(e)
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+		_, err = fmt.Fprint(c.traceOutput, "error", e)
 		return nil, e
 
 	}
 
-	fmt.Println("-------------- RETRY --------------")
-	fmt.Println("response, error:", res, err)
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+	_, err = fmt.Fprint(c.traceOutput, "response", res, "error", err)
 
 	return res, err
 }
