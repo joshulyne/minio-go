@@ -597,6 +597,9 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		if err != nil {
 			errResponse := ToErrorResponse(err)
 			if isS3CodeRetryable(errResponse.Code) {
+				fmt.Println("-------------- RETRY --------------")
+				fmt.Println(errResponse)
+
 				continue // Retry.
 			}
 			return nil, err
@@ -608,6 +611,9 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return nil, err
 			}
+
+			fmt.Println("-------------- RETRY --------------")
+			fmt.Println(err)
 
 			// Retry the request
 			continue
@@ -671,6 +677,9 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 					// Gather Cached location only if bucketName is present.
 					if location, cachedOk := c.bucketLocCache.Get(metadata.bucketName); cachedOk && location != errResponse.Region {
 						c.bucketLocCache.Set(metadata.bucketName, errResponse.Region)
+						fmt.Println("-------------- RETRY --------------")
+						fmt.Println(errResponse)
+
 						continue // Retry.
 					}
 				} else {
@@ -679,6 +688,9 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 						// Retry if the error response has a different region
 						// than the request we just made.
 						metadata.bucketLocation = errResponse.Region
+						fmt.Println("-------------- RETRY --------------")
+						fmt.Println(errResponse)
+
 						continue // Retry
 					}
 				}
@@ -687,11 +699,15 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 
 		// Verify if error response code is retryable.
 		if isS3CodeRetryable(errResponse.Code) {
+			fmt.Println("-------------- RETRY --------------")
+			fmt.Println(errResponse)
 			continue // Retry.
 		}
 
 		// Verify if http status code is retryable.
 		if isHTTPStatusRetryable(res.StatusCode) {
+			fmt.Println("-------------- RETRY --------------")
+			fmt.Println(errResponse)
 			continue // Retry.
 		}
 
@@ -701,8 +717,14 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 
 	// Return an error when retry is canceled or deadlined
 	if e := retryCtx.Err(); e != nil {
+		fmt.Println("-------------- RETRY --------------")
+		fmt.Println(e)
 		return nil, e
+
 	}
+
+	fmt.Println("-------------- RETRY --------------")
+	fmt.Println("response, error:", res, err)
 
 	return res, err
 }
