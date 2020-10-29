@@ -36,10 +36,10 @@ import (
 	"sync"
 	"time"
 
-	md5simd "github.com/minio/md5-simd"
 	"github.com/joshulyne/minio-go/v7/pkg/credentials"
 	"github.com/joshulyne/minio-go/v7/pkg/s3utils"
 	"github.com/joshulyne/minio-go/v7/pkg/signer"
+	md5simd "github.com/minio/md5-simd"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -634,7 +634,6 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			}
 		}
 
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: reading response body --------------")
 		// Read the body to be saved later.
 		errBodyBytes, err := ioutil.ReadAll(res.Body)
 		// res.Body should be closed
@@ -642,7 +641,6 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		if err != nil {
 			return nil, err
 		}
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: response body --------------", string(errBodyBytes))
 
 		// Save the body.
 		errBodySeeker := bytes.NewReader(errBodyBytes)
@@ -655,16 +653,12 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		errBodySeeker.Seek(0, 0) // Seek back to starting point.
 		res.Body = ioutil.NopCloser(errBodySeeker)
 
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- EXECUTE METHOD --------------")
-		_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
-
 		// Bucket region if set in error response and the error
 		// code dictates invalid region, we can retry the request
 		// with the new region.
 		//
 		// Additionally we should only retry if bucketLocation and custom
 		// region is empty.
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: checking region --------------", c.region)
 
 		if c.region == "" {
 			switch errResponse.Code {
@@ -683,8 +677,6 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 					// Gather Cached location only if bucketName is present.
 					if location, cachedOk := c.bucketLocCache.Get(metadata.bucketName); cachedOk && location != errResponse.Region {
 						c.bucketLocCache.Set(metadata.bucketName, errResponse.Region)
-						_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
-						_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 
 						continue // Retry.
 					}
@@ -694,8 +686,6 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 						// Retry if the error response has a different region
 						// than the request we just made.
 						metadata.bucketLocation = errResponse.Region
-						_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
-						_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 
 						continue // Retry
 					}
@@ -705,19 +695,13 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 
 		// Verify if error response code is retryable.
 		if isS3CodeRetryable(errResponse.Code) {
-			_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
-			_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 			continue // Retry.
 		}
 
 		// Verify if http status code is retryable.
 		if isHTTPStatusRetryable(res.StatusCode) {
-			_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
-			_, err = fmt.Fprint(c.traceOutput, "errResponse", errResponse)
 			continue // Retry.
 		}
-
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: getting out of retry loop --------------", c.region)
 
 		// For all other cases break out of the retry loop.
 		break
@@ -725,8 +709,6 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 
 	// Return an error when retry is canceled or deadlined
 	if e := retryCtx.Err(); e != nil {
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: retry canceled or deadlined --------------")
-		_, err = fmt.Fprint(c.traceOutput, "error", e)
 		return nil, e
 
 	}
@@ -743,8 +725,11 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 	if method == "" {
 		method = http.MethodPost
 	}
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest --------------")
 
 	location := metadata.bucketLocation
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: bucket location --------------", location)
+
 	if location == "" {
 		if metadata.bucketName != "" {
 			// Gather location only if bucketName is present.
@@ -758,12 +743,15 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		}
 	}
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: bucket location set as: --------------", location)
+
 	// Look if target url supports virtual host.
 	// We explicitly disallow MakeBucket calls to not use virtual DNS style,
 	// since the resolution may fail.
 	isMakeBucket := (metadata.objectName == "" && method == http.MethodPut && len(metadata.queryValues) == 0)
 	isVirtualHost := c.isVirtualHostStyleRequest(*c.endpointURL, metadata.bucketName) && !isMakeBucket
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: making target url --------------", location)
 	// Construct a new target URL.
 	targetURL, err := c.makeTargetURL(metadata.bucketName, metadata.objectName, location,
 		isVirtualHost, metadata.queryValues)
@@ -773,20 +761,22 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 
 	targetUrlString := targetURL.String()
 
-	_, _ = fmt.Fprint(c.traceOutput, "newRequest targetUrlString", targetUrlString)
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: targetUrlString --------------", targetUrlString)
 
 	if strings.Contains(targetUrlString, "http://10.42.127.166/rdei-thanos/") {
 		targetUrlString = strings.Replace(targetUrlString, "http://10.42.127.166/rdei-thanos/", "http://10.42.127.166/s3/rdei-thanos/", -1)
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, "newRequest targetUrlString", targetUrlString)
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: targetUrlString --------------", targetUrlString)
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: initialize new HTTP request with ctx --------------", targetUrlString)
 	// Initialize a new HTTP request for the method.
 	req, err = http.NewRequestWithContext(ctx, method, targetUrlString, nil)
 	if err != nil {
 		return nil, err
 	}
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: get creds --------------", targetUrlString)
 	// Get credentials from the configured credentials provider.
 	value, err := c.credsProvider.Get()
 	if err != nil {
@@ -811,8 +801,12 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		signerType = credentials.SignatureAnonymous
 	}
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating presign if needed --------------")
+
 	// Generate presign url if needed, return right here.
 	if metadata.expires != 0 && metadata.presignURL {
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating presign --------------")
+
 		if signerType.IsAnonymous() {
 			return nil, errInvalidArgument("Presigned URLs cannot be generated with anonymous credentials.")
 		}
@@ -829,10 +823,14 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 	// Set 'User-Agent' header for the request.
 	c.setUserAgent(req)
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: setting all headers --------------")
+
 	// Set all headers.
 	for k, v := range metadata.customHeader {
 		req.Header.Set(k, v[0])
 	}
+
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: setting request body --------------")
 
 	// Go net/http notoriously closes the request body.
 	// - The request Body, if non-nil, will be closed by the underlying Transport, even on errors.
@@ -861,6 +859,8 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		return req, nil
 	}
 
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer --------------")
+
 	switch {
 	case signerType.IsV2():
 		// Add signature version '2' authorization header.
@@ -882,6 +882,9 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		// Add signature version '4' authorization header.
 		req = signer.SignV4(*req, accessKeyID, secretAccessKey, sessionToken, location)
 	}
+
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: finished generating signer --------------")
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: returning the request --------------")
 
 	// Return request.
 	return req, nil
