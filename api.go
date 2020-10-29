@@ -495,7 +495,7 @@ func (c Client) do(req *http.Request) (*http.Response, error) {
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
 
-	if req.URL.Path == "/rdei-thanos/" {
+	if !strings.Contains(req.URL.String(), "/127.0.0.1") && req.URL.Path == "/rdei-thanos/" {
 		req.URL.Path = "/s3/rdei-thanos/"
 	}
 
