@@ -19,6 +19,7 @@ package minio
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -78,6 +79,7 @@ func (c Client) statObject(ctx context.Context, bucketName, objectName string, o
 	if err := s3utils.CheckValidObjectName(objectName); err != nil {
 		return ObjectInfo{}, err
 	}
+	_, _ = fmt.Fprintln(c.traceOutput, "---------statObject start---------")
 	headers := opts.Header()
 	if opts.Internal.ReplicationDeleteMarker {
 		headers.Set(minIOBucketReplicationDeleteMarker, "true")
@@ -88,6 +90,7 @@ func (c Client) statObject(ctx context.Context, bucketName, objectName string, o
 		urlValues.Set("versionId", opts.VersionID)
 	}
 	// Execute HEAD on objectName.
+	_, _ = fmt.Fprintln(c.traceOutput, "---------statObject: executeMethod START---------")
 	resp, err := c.executeMethod(ctx, http.MethodHead, requestMetadata{
 		bucketName:       bucketName,
 		objectName:       objectName,
@@ -99,6 +102,8 @@ func (c Client) statObject(ctx context.Context, bucketName, objectName string, o
 	if err != nil {
 		return ObjectInfo{}, err
 	}
+	_, _ = fmt.Fprintln(c.traceOutput, "---------statObject: executeMethod END---------")
+	_, _ = fmt.Fprintln(c.traceOutput, "---------statObject: executeMethod response---------", resp)
 	deleteMarker := resp.Header.Get(amzDeleteMarker) == "true"
 
 	if resp != nil {
@@ -122,6 +127,6 @@ func (c Client) statObject(ctx context.Context, bucketName, objectName string, o
 			}, httpRespToErrorResponse(resp, bucketName, objectName)
 		}
 	}
-
+	_, _ = fmt.Fprintln(c.traceOutput, "---------statObject end---------")
 	return ToObjectInfo(bucketName, objectName, resp.Header)
 }

@@ -582,6 +582,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 	// Blank indentifier is kept here on purpose since 'range' without
 	// blank identifiers is only supported since go1.4
 	// https://golang.org/doc/go1.4#forrange.
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: START --------------")
+
 	for range c.newRetryTimer(retryCtx, reqRetry, DefaultRetryUnit, DefaultRetryCap, MaxJitter) {
 		// Retry executes the following function body if request has an
 		// error until maxRetries have been exhausted, retry attempts are
@@ -594,7 +596,7 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 				return nil, err
 			}
 		}
-
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: creating request --------------")
 		// Instantiate a new request.
 		var req *http.Request
 		req, err = c.newRequest(ctx, method, metadata)
@@ -609,6 +611,7 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			return nil, err
 		}
 
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: doing request --------------")
 		// Initiate the request.
 		res, err = c.do(req)
 		if err != nil {
@@ -623,6 +626,7 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			continue
 		}
 
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: checking successful http request --------------")
 		// For any known successful http status, return quickly.
 		for _, httpStatus := range successStatus {
 			if httpStatus == res.StatusCode {
@@ -630,6 +634,7 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			}
 		}
 
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: reading response body --------------")
 		// Read the body to be saved later.
 		errBodyBytes, err := ioutil.ReadAll(res.Body)
 		// res.Body should be closed
@@ -637,6 +642,7 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		if err != nil {
 			return nil, err
 		}
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: response body --------------", string(errBodyBytes))
 
 		// Save the body.
 		errBodySeeker := bytes.NewReader(errBodyBytes)
@@ -658,6 +664,8 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 		//
 		// Additionally we should only retry if bucketLocation and custom
 		// region is empty.
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: checking region --------------", c.region)
+
 		if c.region == "" {
 			switch errResponse.Code {
 			case "AuthorizationHeaderMalformed":
@@ -709,19 +717,21 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			continue // Retry.
 		}
 
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: getting out of retry loop --------------", c.region)
+
 		// For all other cases break out of the retry loop.
 		break
 	}
 
 	// Return an error when retry is canceled or deadlined
 	if e := retryCtx.Err(); e != nil {
-		_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: retry canceled or deadlined --------------")
 		_, err = fmt.Fprint(c.traceOutput, "error", e)
 		return nil, e
 
 	}
 
-	_, _ = fmt.Fprint(c.traceOutput, "-------------- RETRY --------------")
+	_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod --------------")
 	_, err = fmt.Fprint(c.traceOutput, "response", res, "error", err)
 
 	return res, err
