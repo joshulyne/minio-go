@@ -420,6 +420,8 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 
 	// Filter out Signature field from Authorization header.
 	origAuth := req.Header.Get("Authorization")
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Header.Authorization", origAuth)
+
 	if origAuth != "" {
 		req.Header.Set("Authorization", redactSignature(origAuth))
 	}
