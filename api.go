@@ -494,13 +494,15 @@ func (c Client) do(req *http.Request) (*http.Response, error) {
 
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
+	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Host: ",req.URL.Host)
 
-	if !strings.Contains(req.URL.String(), "/127.0.0.1") && req.URL.Path == "/rdei-thanos/" {
+	if req.URL.Host !=  "127.0.0.1" && req.URL.Path == "/rdei-thanos/" {
 		req.URL.Path = "/s3/rdei-thanos/"
 	}
 
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL: ", req.URL)
 	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Path: ",req.URL.Path)
+	_, _ = fmt.Fprint(c.traceOutput, "req.URL.Host: ",req.URL.Host)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
