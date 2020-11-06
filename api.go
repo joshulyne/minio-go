@@ -430,6 +430,10 @@ func (c Client) dumpHTTP(req *http.Request, resp *http.Response) error {
 		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Header", k, v)
 	}
 
+	reqBody, _ := ioutil.ReadAll(req.Body)
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Body", string(reqBody))
+	_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Body size:", len(reqBody))
+
 	// Only display request header.
 	reqTrace, err := httputil.DumpRequestOut(req, false)
 	if err != nil {
@@ -872,6 +876,11 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4 --------------")
 		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4:  --------------")
 		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: content length: --------------", metadata.contentLength)
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: request: --------------", req)
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: accessKeyID: --------------", accessKeyID)
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: secretAccessKey: --------------", secretAccessKey)
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: sessionToken --------------", sessionToken)
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: location: --------------", location)
 
 		req = signer.StreamingSignV4(req, accessKeyID,
 			secretAccessKey, sessionToken, location, metadata.contentLength, time.Now().UTC())
