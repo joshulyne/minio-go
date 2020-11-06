@@ -869,6 +869,10 @@ func (c Client) newRequest(ctx context.Context, method string, metadata requestM
 		// Streaming signature is used by default for a PUT object request. Additionally we also
 		// look if the initialized client is secure, if yes then we don't need to perform
 		// streaming signature.
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4 --------------")
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4:  --------------")
+		_, _ = fmt.Fprint(c.traceOutput, "-------------- newRequest: generating signer: StreamingSignV4: content length: --------------", metadata.contentLength)
+
 		req = signer.StreamingSignV4(req, accessKeyID,
 			secretAccessKey, sessionToken, location, metadata.contentLength, time.Now().UTC())
 	default:
