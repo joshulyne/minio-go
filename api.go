@@ -611,9 +611,9 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 			return nil, err
 		}
 
-		reqBody, _ := ioutil.ReadAll(req.Body)
-		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Body", string(reqBody))
-		_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Body size:", len(reqBody))
+		//reqBody, _ := ioutil.ReadAll(req.Body)
+		//_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Body", string(reqBody))
+		//_, err = fmt.Fprint(c.traceOutput, "dumpHTTP req.Body size:", len(reqBody))
 
 		_, _ = fmt.Fprint(c.traceOutput, "-------------- executeMethod: doing request --------------")
 		// Initiate the request.
